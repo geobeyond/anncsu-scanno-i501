@@ -26,6 +26,7 @@ jobs:
           echo "duckdb=$DUCKDB" >> "$GITHUB_OUTPUT"
 
       - name: Extract current and previous geopackages from duckdb
+        id: extract_gpkg
         if: steps.find_duckdb.outputs.duckdb != ''
         uses: geobeyond/extract-duckdb-table-action@v0.0.0beta
         with:
