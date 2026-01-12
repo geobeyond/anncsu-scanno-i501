@@ -1,0 +1,65 @@
+name: Update anncsu remote DB
+
+on:
+  push:
+    paths:
+      - 'anncsu_manager/resources/data/anncsu-scanno-i501/**.duckdb'
+
+jobs:
+  update-anncsu:
+    runs-on: ubuntu-latest
+    env:
+      API_URL: ${{ secrets.ANNSCU_API_URL }}
+      API_TOKEN: ${{ secrets.ANNSCU_API_TOKEN }}
+    steps:
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find latest duckdb file
+        id: find_duckdb
+        run: |
+          DIR=anncsu_manager/resources/data/anncsu-scanno-i501
+          DUCKDB=$(ls -1t "$DIR"/*.duckdb 2>/dev/null | head -n1 || true)
+          echo "duckdb=$DUCKDB" >> "$GITHUB_OUTPUT"
+
+      - name: Extract current and previous geopackages from duckdb
+        if: steps.find_duckdb.outputs.duckdb != ''
+        uses: geobeyond/extract-duckdb-table-action@v0.0.0beta
+        with:
+          duckdb_file: ${{ steps.find_duckdb.outputs.duckdb }}
+          table_name: anncsu
+          output_format: "GPKG"
+
+      - name: Run geodiff between previous and current
+        id: geodiff
+        uses: geobeyond/geodiff-action@v0.0.0beta
+        with:
+          # expected inputs: left/right gpkg and output file
+          base_file: "current.gpkg"
+          compare_file: "previous.gpkg"
+          output_format: "json"
+
+    #   - name: Upload geodiff artifact
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #       name: anncsu-geodiff
+    #       path: anncsu_changes.patch
+
+    #   - name: Notify anncsu API with changes
+    #     if: env.API_URL != '' && env.API_TOKEN != ''
+    #     env:
+    #       DIFF_RESULT: ${{ steps.geodiff.outputs.diff_result }}
+    #       HAS_CHANGES: ${{ steps.geodiff.outputs.has_changes }}
+    #     run: |
+    #       set -e
+    #       if [ ! -f anncsu_changes.patch ]; then
+    #         echo "No changes file found; exiting"
+    #         exit 0
+    #       fi
+    #       curl -sS -X POST "${API_URL}" \
+    #         -H "Authorization: Bearer ${API_TOKEN}" \
+    #         -H "Content-Type: application/octet-stream" \
+    #         --data-binary @anncsu_changes.patch
+
