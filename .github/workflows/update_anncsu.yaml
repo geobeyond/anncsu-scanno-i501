@@ -1,6 +1,7 @@
 name: Update anncsu remote DB
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'anncsu_manager/resources/data/anncsu-scanno-i501/**.duckdb'
