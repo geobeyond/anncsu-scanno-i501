@@ -21,8 +21,7 @@ jobs:
       - name: Find latest duckdb file
         id: find_duckdb
         run: |
-          DIR=anncsu_manager/resources/data/anncsu-scanno-i501
-          DUCKDB=$(ls -1t "$DIR"/*.duckdb 2>/dev/null | head -n1 || true)
+          DUCKDB=$(ls -1t ./*.duckdb 2>/dev/null | head -n1 || true)
           echo "duckdb=$DUCKDB" >> "$GITHUB_OUTPUT"
 
       - name: Extract current and previous geopackages from duckdb
