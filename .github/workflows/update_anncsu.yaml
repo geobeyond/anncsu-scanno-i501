@@ -36,6 +36,7 @@ jobs:
       - name: Rename extracted files
         if: steps.extract_gpkg.outputs.current_file != ''
         run: |
+          ls -altr /github/workspace/
           mv "${{ steps.extract_gpkg.outputs.current_file }}" current.gpkg
           mv "${{ steps.extract_gpkg.outputs.previous_file }}" previous.gpkg
 
@@ -47,7 +48,7 @@ jobs:
           if [ ! -f previous.gpkg ]; then
             echo "previous.gpkg not found!"
             exit 1
-          fi
+          fi  
 
       - name: Run geodiff between previous and current
         id: geodiff
