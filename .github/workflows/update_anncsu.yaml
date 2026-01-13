@@ -33,6 +33,22 @@ jobs:
           table_name: anncsu
           output_format: "GPKG"
 
+      - name: Rename extracted files
+        if: steps.extract_gpkg.outputs.current_file != ''
+        run: |
+          mv "${{ steps.extract_gpkg.outputs.current_file }}" current.gpkg
+          mv "${{ steps.extract_gpkg.outputs.previous_file }}" previous.gpkg
+
+          # check if renamed files exist
+          if [ ! -f current.gpkg ]; then
+            echo "current.gpkg not found!"
+            exit 1
+          fi
+          if [ ! -f previous.gpkg ]; then
+            echo "previous.gpkg not found!"
+            exit 1
+          fi
+
       - name: Run geodiff between previous and current
         id: geodiff
         uses: geobeyond/geodiff-action@v0.0.0beta
