@@ -36,11 +36,16 @@ jobs:
 
       - name: Rename extracted files
         if: steps.extract_gpkg.outputs.current_file != ''
+        working-directory: ${{ github.workspace }}
         run: |
           ls -altr .
           echo $PWD
-          mv "${{ steps.extract_gpkg.outputs.current_file }}" current.gpkg
-          mv "${{ steps.extract_gpkg.outputs.previous_file }}" previous.gpkg
+          current_file=$(basename "${{ steps.extract_gpkg.outputs.current_file }}")
+          previous_file=$(basename "${{ steps.extract_gpkg.outputs.previous_file }}")
+          echo "Current file: $current_file"
+          echo "Previous file: $previous_file"
+          mv "$current_file" current.gpkg
+          mv "$previous_file" previous.gpkg
 
           # check if renamed files exist
           if [ ! -f current.gpkg ]; then
@@ -50,7 +55,8 @@ jobs:
           if [ ! -f previous.gpkg ]; then
             echo "previous.gpkg not found!"
             exit 1
-          fi  
+          fi
+          echo "Renamed files successfully."
 
       - name: Run geodiff between previous and current
         id: geodiff
