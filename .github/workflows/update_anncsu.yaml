@@ -9,6 +9,7 @@ on:
 jobs:
   update-anncsu:
     runs-on: ubuntu-latest
+
     env:
       API_URL: ${{ secrets.ANNSCU_API_URL }}
       API_TOKEN: ${{ secrets.ANNSCU_API_TOKEN }}
@@ -36,7 +37,8 @@ jobs:
       - name: Rename extracted files
         if: steps.extract_gpkg.outputs.current_file != ''
         run: |
-          ls -altr /github/workspace/
+          ls -altr .
+          echo $PWD
           mv "${{ steps.extract_gpkg.outputs.current_file }}" current.gpkg
           mv "${{ steps.extract_gpkg.outputs.previous_file }}" previous.gpkg
 
