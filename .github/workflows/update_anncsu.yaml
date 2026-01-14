@@ -34,7 +34,8 @@ jobs:
           table_name: WhereAbouts_fails
           output_format: "GPKG"
 
-      - name: Rename extracted files
+      - name: basename extracted files
+        id: basename_files
         if: steps.extract_gpkg.outputs.current_file != ''
         working-directory: ${{ github.workspace }}
         run: |
@@ -42,8 +43,8 @@ jobs:
           previous_file=$(basename "${{ steps.extract_gpkg.outputs.previous_file }}")
           echo "Current file: $current_file"
           echo "Previous file: $previous_file"
-          mv "$current_file" current.gpkg
-          mv "$previous_file" previous.gpkg
+          echo "current=$current_file" >> "$GITHUB_OUTPUT"
+          echo "previous=$previous_file" >> "$GITHUB_OUTPUT"
           echo "Renamed files successfully."
 
       - name: Run geodiff between previous and current
@@ -51,8 +52,8 @@ jobs:
         uses: geobeyond/geodiff-action@v0.0.0beta
         with:
           # expected inputs: left/right gpkg and output file
-          base_file: "current.gpkg"
-          compare_file: "previous.gpkg"
+          base_file: ${{ steps.basename_files.outputs.current }}
+          compare_file: ${{ steps.basename_files.outputs.previous }}
           output_format: "json"
 
     #   - name: Upload geodiff artifact
