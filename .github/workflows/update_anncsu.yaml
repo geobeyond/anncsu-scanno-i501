@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'anncsu_manager/resources/data/anncsu-scanno-i501/**.duckdb'
+      - '*.duckdb'
 
 jobs:
   update-anncsu:
