@@ -52,8 +52,8 @@ jobs:
         uses: geobeyond/geodiff-action@v0.0.0beta
         with:
           # expected inputs: left/right gpkg and output file
-          base_file: ${{ steps.basename_files.outputs.current }}
-          compare_file: ${{ steps.basename_files.outputs.previous }}
+          base_file: ${{ steps.basename_files.outputs.previous }}
+          compare_file: ${{ steps.basename_files.outputs.current }}
           output_format: "json"
 
     #   - name: Upload geodiff artifact
