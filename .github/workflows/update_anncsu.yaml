@@ -25,6 +25,14 @@ jobs:
           DUCKDB=$(ls -1t ./*.duckdb 2>/dev/null | head -n1 || true)
           echo "duckdb=$DUCKDB" >> "$GITHUB_OUTPUT"
 
+      - name: "Install SQLite3 (if missing)"
+        run: |
+          if command -v sqlite3 >/dev/null 2>&1; then
+            echo "sqlite3 already installed: $(sqlite3 --version)"
+          else
+            sudo apt-get update
+            sudo apt-get install -y sqlite3
+          fi
       - name: Extract current and previous geopackages from duckdb
         id: extract_gpkg
         if: steps.find_duckdb.outputs.duckdb != ''
@@ -47,13 +55,36 @@ jobs:
           echo "previous=$previous_file" >> "$GITHUB_OUTPUT"
           echo "Renamed files successfully."
 
+      - name: If first commit create fake previous file
+        id: create_fake_previous_if_first
+        run: |
+          # generate a fake previous file with no records if this is the first commit
+          if [ "${{ steps.basename_files.outputs.previous }}" == "first_commit" ]; then
+            # set fake previous filename
+            fake_previous="fake_previous_anncsu.gpkg"
+
+            cp "${{ steps.extract_gpkg.outputs.current_file }}" ${fake_previous}
+            echo "Created fake previous file: ${fake_previous}"
+
+            # empty records in geocoded_anncsu table in fake_previous_anncsu.gpkg
+            sqlite3 ${fake_previous} "DELETE FROM geocoded_anncsu;"
+            echo "Emptied records in fake previous file: ${fake_previous}"
+
+            # Update the previous file output to point to the fake file
+            echo "previous=${fake_previous}" >> "$GITHUB_OUTPUT"
+            echo "current=${{ steps.basename_files.outputs.current }}" >> "$GITHUB_OUTPUT"
+          else
+            # propagate previous and current as is
+            echo "previous=${{ steps.basename_files.outputs.previous }}" >> "$GITHUB_OUTPUT"
+            echo "current=${{ steps.basename_files.outputs.current }}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Run geodiff between previous and current
         id: geodiff
         uses: geobeyond/geodiff-action@v0.0.0beta
         with:
           # expected inputs: left/right gpkg and output file
-          base_file: ${{ steps.basename_files.outputs.previous }}
-          compare_file: ${{ steps.basename_files.outputs.current }}
+          base_file: ${{ steps.create_fake_previous_if_first.outputs.previous }}
+          compare_file: ${{ steps.create_fake_previous_if_first.outputs.current }}
           output_format: "json"
 
     #   - name: Upload geodiff artifact
