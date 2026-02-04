@@ -31,7 +31,7 @@ jobs:
         uses: geobeyond/extract-duckdb-table-action@v0.0.0beta
         with:
           duckdb_file: ${{ steps.find_duckdb.outputs.duckdb }}
-          table_name: WhereAbouts_fails
+          table_name: geocoded_anncsu
           output_format: "GPKG"
 
       - name: basename extracted files
