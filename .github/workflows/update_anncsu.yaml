@@ -63,7 +63,7 @@ jobs:
             # set fake previous filename
             fake_previous="fake_previous_anncsu.gpkg"
 
-            cp "${{ steps.extract_gpkg.outputs.current_file }}" ${fake_previous}
+            cp "${{ steps.basename_files.outputs.current }}" ${fake_previous}
             echo "Created fake previous file: ${fake_previous}"
 
             # empty records in geocoded_anncsu table in fake_previous_anncsu.gpkg
